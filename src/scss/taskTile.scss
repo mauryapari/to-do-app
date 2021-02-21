@@ -1,0 +1,27 @@
+a{
+    text-decoration: none;
+}
+.task-tile{
+    border: 2px solid #222;
+    margin: 20px 30px;
+    p{
+        margin: 10px ;
+        font-size: 18px;
+        font-weight: 500;
+    }
+    .button {
+        position: relative;
+        float: right;
+        top: -40px;
+        padding: 10px 10px; 
+    }
+    .remove {
+        right: -2px;
+    }
+    .move-left{
+        right: 2px;
+    }
+    .move-right {
+        right: 2px;
+    }
+}
