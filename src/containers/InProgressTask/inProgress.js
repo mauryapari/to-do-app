@@ -13,7 +13,7 @@ class INPROGRESS extends Component {
         let taskArr = this.props.taskArr;
         let renderTaskArr = taskArr.map((item,index)=>{
             return <TaskTile key={index} 
-            taskName={item} 
+            taskName={item.task} 
             moveTaskLeft={()=>this.props.moveLeft(index,this.state.action)}
             moveTaskRight={()=>this.props.moveRight(index,this.state.action)}
             removeTask={()=>this.props.cancel(index,this.state.action)}></TaskTile>

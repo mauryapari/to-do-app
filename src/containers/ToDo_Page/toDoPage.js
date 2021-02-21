@@ -5,6 +5,7 @@ import DONE  from '../DoneTask/done';
 import Modal from '../../components/modals/modal'
 import '../../scss/main.scss';
 import '../../scss/toDoPage.scss';
+import instance from '../../firebase/instance';
 
 class TODOPAGE extends Component{
     state = {
@@ -39,12 +40,18 @@ class TODOPAGE extends Component{
 
     saveTask = (e) => {
         if(e.key=='Enter' || e.keyCode == 13){
-            let newTaskArr=[...this.state.toDoTaskArray];
-            newTaskArr.push(this.state.newTask);
-            this.setState({
-                toDoTaskArray:newTaskArr,
-                isModalVisible:false,
-                newTask:''
+            const data = {
+                task:this.state.newTask
+            }
+            instance.post("/tasks.json",data).then(resp=>{
+                console.log(resp);
+                let newTaskArr=[...this.state.toDoTaskArray];
+                newTaskArr.push({task:this.state.newTask,index:resp.data.name});
+                this.setState({
+                    toDoTaskArray:newTaskArr,
+                    isModalVisible:false,
+                    newTask:''
+                })
             })
         }
     }
