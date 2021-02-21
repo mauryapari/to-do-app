@@ -6,10 +6,8 @@ class Modal extends Component {
         super(props)
     }
     render() {
-        console.log(this.props.show);
         let modalClass = "modal ";
         modalClass+=this.props.show ? "display-block":"display-none";
-        console.log(modalClass)
         return(
             <div className={modalClass}>
                 <div className="modal-main">
