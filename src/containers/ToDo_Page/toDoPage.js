@@ -1,21 +1,49 @@
 import React, { Component } from 'react';
+import instance from '../../firebase/instance';
+
 import TODO from '../TODO/todo';
 import INPROGRESS from '../InProgressTask/inProgress';
 import DONE  from '../DoneTask/done';
 import Modal from '../../components/modals/modal'
+import Spinner from '../../components/Spinner/spinner';
+
 import '../../scss/main.scss';
 import '../../scss/toDoPage.scss';
-import instance from '../../firebase/instance';
 
 class TODOPAGE extends Component{
     state = {
         isModalVisible:false,
-        toDoTaskArray:[],
-        inProgresTaskArr:[],
-        doneTaskArr:[],
+        toDo:[],
+        inProgress:[],
+        done:[],
         newTask:'',
         isErrorModalVisible : false
     }
+
+    componentDidMount(){
+        this.getData();
+    }
+
+    getData = () => {
+        this.showSpinner();
+
+        instance.get("/tasks.json").then(resp=>{
+            if(resp && resp.status === 200) {
+                 for(let key in resp.data){
+                    let taskArr =[]
+                     for(let k in resp.data[key]){
+                        taskArr.push({id:k,task:resp.data[key][k].task})
+                     }
+                     this.setState({
+                         [key]:taskArr
+                     },()=>{
+                        this.hideSpinner();
+                    })
+                 }
+            }
+        })
+    }
+
 
     openModal = (e) => {
         e.preventDefault();
@@ -38,99 +66,114 @@ class TODOPAGE extends Component{
         })
     }
 
+    moveTask(task,type) {
+        this.showSpinner();
+        const data = {
+            task:task
+        }
+        instance.post('/tasks/'+type+'.json',data).then(resp=>{
+            let newTaskArr=[...this.state[type]];
+                newTaskArr.push({task:task,id:resp.data.name});
+                this.setState({
+                    [type]:newTaskArr,
+                },()=>{
+                    this.hideSpinner();
+                })
+        })
+
+    }
+
     saveTask = (e) => {
         if(e.key=='Enter' || e.keyCode == 13){
+            this.showSpinner();
             const data = {
                 task:this.state.newTask
             }
-            instance.post("/tasks.json",data).then(resp=>{
-                console.log(resp);
-                let newTaskArr=[...this.state.toDoTaskArray];
-                newTaskArr.push({task:this.state.newTask,index:resp.data.name});
+            instance.post("/tasks/toDo.json",data).then(resp=>{
+                let newTaskArr=[...this.state.toDo];
+                newTaskArr.push({task:this.state.newTask,id:resp.data.name});
                 this.setState({
-                    toDoTaskArray:newTaskArr,
+                    toDo:newTaskArr,
                     isModalVisible:false,
                     newTask:''
+                },()=>{
+                    this.hideSpinner();
                 })
             })
         }
     }
 
     removeTask=(index,type)=>{
-        var newArr = []
-        if(type ==="TODO"){
-            newArr = [...this.state.toDoTaskArray];
-            newArr.splice(index,1);
-            this.setState({
-                toDoTaskArray : newArr
-            })
-        } else if(type === "INPROGRESS"){
-            newArr = [...this.state.inProgresTaskArr];
-            newArr.splice(index,1);
-            this.setState({
-                inProgresTaskArr : newArr
-            })
-        } else if(type === "DONE"){
-            newArr = [...this.state.doneTaskArr];
-            newArr.splice(index,1);
-            this.setState({
-                doneTaskArr : newArr
-            })
-        }
+        this.showSpinner();
+        console.log("[remove]",index)
+        instance.delete('/tasks/'+type+'/'+index+'.json').then(resp=>{
+            if(resp && resp.status === 200) {
+                this.setState({
+                    [type] : this.state[type].filter(item=> item.id !== index)
+                },()=>{
+                    this.hideSpinner();
+                })
+            }
+        })
     }
 
     moveRight = (index,type) => {
-        console.log(index);
-        var newArr = [];
-        if(type === "TODO"){
-            newArr = [...this.state.inProgresTaskArr]
-            newArr.push(this.state.toDoTaskArray[index]);
-            this.setState({
-                inProgresTaskArr:newArr
-            })
-        } else if(type === "INPROGRESS"){
-            newArr = [...this.state.doneTaskArr]
-            newArr.push(this.state.inProgresTaskArr[index]);
-            this.setState({
-                doneTaskArr:newArr
-            })
-        } else if(type==="DONE"){
+        var moveToType = null;
+        var item = this.state[type].find(item=> item.id === index);
+
+        if(type === "toDo"){
+            moveToType = 'inProgress'
+        } else if(type === "inProgress"){
+            moveToType = 'done'
+        } else if(type==="done"){
             this.setState({
                 isErrorModalVisible:true
             })
+            return
         }
-        if(newArr.length>0){
-            this.removeTask(index,type);
-        }
+        console.log("[right][type][movetoType]",index,type,item,moveToType);
+        this.removeTask(index,type)
+        this.moveTask(item.task,moveToType);
     }
 
     moveLeft = (index,type) => {
-        var newArr = [];
-        if(type === "TODO"){
+        var moveToType = null;
+        var item = this.state[type].find(item=> item.id === index);
+
+        if(type === "toDo"){
             this.setState({
                 isErrorModalVisible:true
             })
-        } else if(type === "INPROGRESS"){
-            newArr = [...this.state.toDoTaskArray]
-            newArr.push(this.state.inProgresTaskArr[index]);
-            this.setState({
-                toDoTaskArray:newArr
-            })
-        } else if(type==="DONE"){
-            newArr = [...this.state.inProgresTaskArr]
-            newArr.push(this.state.doneTaskArr[index]);
-            this.setState({
-                inProgresTaskArr:newArr
-            })
+            return
+        } else if(type === "inProgress"){
+            moveToType = 'toDo'
+        } else if(type==="done"){
+            moveToType = 'inProgress'
+            
         }
-        if(newArr.length>0){
-            this.removeTask(index,type);
-        }
+        console.log("[left][type][movetoType]",index,type,item,moveToType);
+        this.removeTask(index,type)
+        this.moveTask(item.task,moveToType);
+        
     }
+
+    showSpinner =() => {
+        this.setState({
+            showSpinner:true
+        })
+    }
+
+    hideSpinner =() => {
+        this.setState({
+            showSpinner:false
+        })
+    }
+
     render(){
 
         return(
             <div>
+                {this.state.showSpinner ? <Spinner></Spinner> : null}
                 <Modal show ={this.state.isModalVisible} handleClose={(e)=>this.hideModal(e)}>
                     <h2>Enter New Task</h2>
                     <input type="text" value={this.state.newTask} onChange={(e)=>this.createNewTask(e)} onKeyDown={(e)=>this.saveTask(e)}/>
@@ -144,17 +187,17 @@ class TODOPAGE extends Component{
                 <div className="lower-half">
                     <div className= "task-containers">
 
-                        <TODO taskArr={this.state.toDoTaskArray} 
+                        <TODO taskArr={this.state.toDo} 
                         moveLeft={(index,value)=>this.moveLeft(index,value)} 
                         moveRight={(index,value)=>this.moveRight(index,value)} 
                         cancel={(index,value)=>this.removeTask(index,value)}></TODO>
 
-                        <INPROGRESS taskArr={this.state.inProgresTaskArr} 
+                        <INPROGRESS taskArr={this.state.inProgress} 
                         moveLeft={(index,value)=>this.moveLeft(index,value)} 
                         moveRight={(index,value)=>this.moveRight(index,value)} 
                         cancel={(index,value)=>this.removeTask(index,value)}></INPROGRESS>
 
-                        <DONE taskArr={this.state.doneTaskArr} 
+                        <DONE taskArr={this.state.done} 
                         moveLeft={(index,value)=>this.moveLeft(index,value)} 
                         moveRight={(index,value)=>this.moveRight(index,value)} 
                         cancel={(index,value)=>this.removeTask(index,value)}></DONE>

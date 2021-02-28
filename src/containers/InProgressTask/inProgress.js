@@ -6,7 +6,7 @@ class INPROGRESS extends Component {
     constructor(props){
         super(props);
         this.state = {
-            action:"INPROGRESS"
+            action:"inProgress"
         }
     }
     render() {
@@ -14,9 +14,9 @@ class INPROGRESS extends Component {
         let renderTaskArr = taskArr.map((item,index)=>{
             return <TaskTile key={index} 
             taskName={item.task} 
-            moveTaskLeft={()=>this.props.moveLeft(index,this.state.action)}
-            moveTaskRight={()=>this.props.moveRight(index,this.state.action)}
-            removeTask={()=>this.props.cancel(index,this.state.action)}></TaskTile>
+            moveTaskLeft={()=>this.props.moveLeft(item.id,this.state.action)}
+            moveTaskRight={()=>this.props.moveRight(item.id,this.state.action)}
+            removeTask={()=>this.props.cancel(item.id,this.state.action)}></TaskTile>
         })
         return(
             <div className="task-container">
