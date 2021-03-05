@@ -25,7 +25,6 @@ class TODOPAGE extends Component{
     }
 
     getData = () => {
-        this.showSpinner();
 
         instance.get("/tasks.json").then(resp=>{
             if(resp && resp.status === 200) {
@@ -36,9 +35,7 @@ class TODOPAGE extends Component{
                      }
                      this.setState({
                          [key]:taskArr
-                     },()=>{
-                        this.hideSpinner();
-                    })
+                     })
                  }
             }
         })
