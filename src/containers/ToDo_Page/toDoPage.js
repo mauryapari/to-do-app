@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import instance from '../../firebase/instance';
+import { connect } from 'react-redux';
+
 
 import TODO from '../TODO/todo';
 import INPROGRESS from '../InProgressTask/inProgress';
@@ -173,9 +175,9 @@ class TODOPAGE extends Component{
                 {this.state.showSpinner ? <Spinner></Spinner> : null}
                 <Modal show ={this.state.isModalVisible} handleClose={(e)=>this.hideModal(e)}>
                     <h2>Enter New Task</h2>
-                    <input type="text" value={this.state.newTask} onChange={(e)=>this.createNewTask(e)} onKeyDown={(e)=>this.saveTask(e)}/>
+                    <input type="text" value={this.props.newTask} onChange={(e)=>this.props.createNewTask(e)} onKeyDown={(e)=>this.props.saveTask(e)}/>
                 </Modal>
-                <Modal show ={this.state.isErrorModalVisible} handleClose={(e)=>this.hideModal(e)}>
+                <Modal show ={this.props.isErrorModalVisible} handleClose={(e)=>this.hideModal(e)}>
                     <h2>Cannot perform this action</h2>
                 </Modal>
                 <div className="upper-half">
@@ -184,20 +186,20 @@ class TODOPAGE extends Component{
                 <div className="lower-half">
                     <div className= "task-containers">
 
-                        <TODO taskArr={this.state.toDo} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></TODO>
+                        <TODO taskArr={this.props.toDo} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></TODO>
 
-                        <INPROGRESS taskArr={this.state.inProgress} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></INPROGRESS>
+                        <INPROGRESS taskArr={this.props.inProgress} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></INPROGRESS>
 
-                        <DONE taskArr={this.state.done} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></DONE>
+                        <DONE taskArr={this.props.done} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></DONE>
                         
                     </div>
                 </div>
@@ -205,4 +207,27 @@ class TODOPAGE extends Component{
         )
     }
 }
-export default TODOPAGE;
+
+
+const mapStoreToProps = (state) => {
+    return {
+        isModalVisible: state.isModalVisible,
+        newTask : state.newTask,
+        toDo: state.toDo,
+        inProgress:state.inProgress,
+        done:state.done,
+        isErrorModalVisible: state.isErrorModalVisible
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        createNewTask: (e)=>dispatch({type:"CREATE_NEW",payload:e}),
+        saveTask: (e)=>dispatch({type:"SAVE_TASK",payload:e}),
+        removeTask: (index,value) => dispatch({type:"REMOVE",payload:{index:index,value:value}}),
+        moveRight: (index,value) => dispatch({type:"MOVE_RIGHT",payload:{index:index,type:value}}),
+        moveLeft: (index,value) => dispatch({type:"MOVE_LEFT",payload:{index:index,type:value}})
+    }
+}
+
+export default connect(mapStoreToProps, mapDispatchToProps)(TODOPAGE);
