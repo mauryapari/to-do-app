@@ -8,6 +8,7 @@ import INPROGRESS from '../InProgressTask/inProgress';
 import DONE  from '../DoneTask/done';
 import Modal from '../../components/modals/modal'
 import Spinner from '../../components/Spinner/spinner';
+import * as actionType from '../../reducers/action';
 
 import '../../scss/main.scss';
 import '../../scss/toDoPage.scss';
@@ -44,12 +45,12 @@ class TODOPAGE extends Component{
     }
 
 
-    openModal = (e) => {
-        e.preventDefault();
-        this.setState({
-            isModalVisible:true
-        })
-    }
+    // openModal = (e) => {
+    //     e.preventDefault();
+    //     this.setState({
+    //         isModalVisible:true
+    //     })
+    // }
 
     hideModal = (e) =>{
         e.preventDefault();
@@ -173,15 +174,15 @@ class TODOPAGE extends Component{
         return(
             <div>
                 {this.state.showSpinner ? <Spinner></Spinner> : null}
-                <Modal show ={this.state.isModalVisible} handleClose={(e)=>this.hideModal(e)}>
+                <Modal show = {this.props.isModalVisible}  handleClose={(e)=>this.props.hideModal(e)}>
                     <h2>Enter New Task</h2>
                     <input type="text" value={this.props.newTask} onChange={(e)=>this.props.createNewTask(e)} onKeyDown={(e)=>this.props.saveTask(e)}/>
                 </Modal>
-                <Modal show ={this.props.isErrorModalVisible} handleClose={(e)=>this.hideModal(e)}>
+                <Modal show ={this.props.isErrorModalVisible} handleClose={(e)=>this.props.hideModal(e)}>
                     <h2>Cannot perform this action</h2>
                 </Modal>
                 <div className="upper-half">
-                    <a href="#" onClick={(e)=>this.openModal(e)} className="task-button">NEW TASK</a>
+                    <a href="#" onClick={(e)=>this.props.openModal(e)} className="task-button">NEW TASK</a>
                 </div>
                 <div className="lower-half">
                     <div className= "task-containers">
@@ -222,11 +223,14 @@ const mapStoreToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        createNewTask: (e)=>dispatch({type:"CREATE_NEW",payload:e}),
-        saveTask: (e)=>dispatch({type:"SAVE_TASK",payload:e}),
-        removeTask: (index,value) => dispatch({type:"REMOVE",payload:{index:index,value:value}}),
-        moveRight: (index,value) => dispatch({type:"MOVE_RIGHT",payload:{index:index,type:value}}),
-        moveLeft: (index,value) => dispatch({type:"MOVE_LEFT",payload:{index:index,type:value}})
+        createNewTask: (e)=>dispatch({type:actionType.CREATE_NEW,payload:e}),
+        saveTask: (e)=>dispatch({type:actionType.SAVE_TASK,payload:e}),
+        removeTask: (index,value) => dispatch({type:actionType.REMOVE,payload:{index:index,value:value}}),
+        moveRight: (index,value) => dispatch({type:actionType.MOVE_RIGHT,payload:{index:index,type:value}}),
+        moveLeft: (index,value) => dispatch({type:actionType.MOVE_LEFT,payload:{index:index,type:value}}),
+        hideModal: (e) => dispatch({type:actionType.HIDE_MODEL, payload:e}),
+        openModal: (e) => dispatch({type:actionType.SHOW_MODAL, payload:e}),
+
     }
 }
 
