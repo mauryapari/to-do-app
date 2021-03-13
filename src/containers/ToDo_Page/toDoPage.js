@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import instance from '../../firebase/instance';
+import { connect } from 'react-redux';
+
 
 import TODO from '../TODO/todo';
 import INPROGRESS from '../InProgressTask/inProgress';
 import DONE  from '../DoneTask/done';
 import Modal from '../../components/modals/modal'
 import Spinner from '../../components/Spinner/spinner';
+import * as actionType from '../../reducers/action';
 
 import '../../scss/main.scss';
 import '../../scss/toDoPage.scss';
@@ -42,12 +45,12 @@ class TODOPAGE extends Component{
     }
 
 
-    openModal = (e) => {
-        e.preventDefault();
-        this.setState({
-            isModalVisible:true
-        })
-    }
+    // openModal = (e) => {
+    //     e.preventDefault();
+    //     this.setState({
+    //         isModalVisible:true
+    //     })
+    // }
 
     hideModal = (e) =>{
         e.preventDefault();
@@ -171,33 +174,33 @@ class TODOPAGE extends Component{
         return(
             <div>
                 {this.state.showSpinner ? <Spinner></Spinner> : null}
-                <Modal show ={this.state.isModalVisible} handleClose={(e)=>this.hideModal(e)}>
+                <Modal show = {this.props.isModalVisible}  handleClose={(e)=>this.props.hideModal(e)}>
                     <h2>Enter New Task</h2>
-                    <input type="text" value={this.state.newTask} onChange={(e)=>this.createNewTask(e)} onKeyDown={(e)=>this.saveTask(e)}/>
+                    <input type="text" value={this.props.newTask} onChange={(e)=>this.props.createNewTask(e)} onKeyDown={(e)=>this.props.saveTask(e)}/>
                 </Modal>
-                <Modal show ={this.state.isErrorModalVisible} handleClose={(e)=>this.hideModal(e)}>
+                <Modal show ={this.props.isErrorModalVisible} handleClose={(e)=>this.props.hideModal(e)}>
                     <h2>Cannot perform this action</h2>
                 </Modal>
                 <div className="upper-half">
-                    <a href="#" onClick={(e)=>this.openModal(e)} className="task-button">NEW TASK</a>
+                    <a href="#" onClick={(e)=>this.props.openModal(e)} className="task-button">NEW TASK</a>
                 </div>
                 <div className="lower-half">
                     <div className= "task-containers">
 
-                        <TODO taskArr={this.state.toDo} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></TODO>
+                        <TODO taskArr={this.props.toDo} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></TODO>
 
-                        <INPROGRESS taskArr={this.state.inProgress} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></INPROGRESS>
+                        <INPROGRESS taskArr={this.props.inProgress} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></INPROGRESS>
 
-                        <DONE taskArr={this.state.done} 
-                        moveLeft={(index,value)=>this.moveLeft(index,value)} 
-                        moveRight={(index,value)=>this.moveRight(index,value)} 
-                        cancel={(index,value)=>this.removeTask(index,value)}></DONE>
+                        <DONE taskArr={this.props.done} 
+                        moveLeft={(index,value)=>this.props.moveLeft(index,value)} 
+                        moveRight={(index,value)=>this.props.moveRight(index,value)} 
+                        cancel={(index,value)=>this.props.removeTask(index,value)}></DONE>
                         
                     </div>
                 </div>
@@ -205,4 +208,30 @@ class TODOPAGE extends Component{
         )
     }
 }
-export default TODOPAGE;
+
+
+const mapStoreToProps = (state) => {
+    return {
+        isModalVisible: state.isModalVisible,
+        newTask : state.newTask,
+        toDo: state.toDo,
+        inProgress:state.inProgress,
+        done:state.done,
+        isErrorModalVisible: state.isErrorModalVisible
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        createNewTask: (e)=>dispatch({type:actionType.CREATE_NEW,payload:e}),
+        saveTask: (e)=>dispatch({type:actionType.SAVE_TASK,payload:e}),
+        removeTask: (index,value) => dispatch({type:actionType.REMOVE,payload:{index:index,value:value}}),
+        moveRight: (index,value) => dispatch({type:actionType.MOVE_RIGHT,payload:{index:index,type:value}}),
+        moveLeft: (index,value) => dispatch({type:actionType.MOVE_LEFT,payload:{index:index,type:value}}),
+        hideModal: (e) => dispatch({type:actionType.HIDE_MODEL, payload:e}),
+        openModal: (e) => dispatch({type:actionType.SHOW_MODAL, payload:e}),
+
+    }
+}
+
+export default connect(mapStoreToProps, mapDispatchToProps)(TODOPAGE);

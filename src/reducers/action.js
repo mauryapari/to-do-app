@@ -1,0 +1,7 @@
+export const  CREATE_NEW = "CREATE_NEW"
+export const SAVE_TASK = "SAVE_TASK"
+export const  REMOVE = "REMOVE"
+export const MOVE_RIGHT= "MOVE_RIGHT"
+export const  MOVE_LEFT = "MOVE_LEFT"
+export const  HIDE_MODEL = "HIDE_MODEL"
+export const  SHOW_MODAL = "SHOW_MODAL"
